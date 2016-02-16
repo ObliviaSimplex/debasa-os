@@ -1,0 +1,11 @@
+ ____  _____    _    ____  __  __ _____ 
+|  _ \| ____|  / \  |  _ \|  \/  | ____|
+| |_) |  _|   / _ \ | | | | |\/| |  _|  
+|  _ <| |___ / ___ \| |_| | |  | | |___ 
+|_| \_\_____/_/   \_\____/|_|  |_|_____|
+                                        
+
+a hobby OS written in asm and rust. So far, I've just been following a
+tutorial at http://os.phil-opp.com/, but hopefully I'll think of something 
+clever to do with this once I'm finished the walkthrough. 
+
