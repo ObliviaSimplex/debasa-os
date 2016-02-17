@@ -1,4 +1,6 @@
 arch ?= x86_64
+target ?= $(arch)-unknown-linux-gnu
+rust_os := target/$(target)/debug/libblog_os.a
 kernel := build/kernel-$(arch).bin
 iso := build/os-$(arch).iso
 
@@ -28,9 +30,11 @@ $(iso): $(kernel) $(grub.cfg)
 	@grub-mkrescue -o $(iso) build/isofiles -d /usr/lib/grub/i386-pc/ 2> /dev/null
 ##	@rm -r build/isofiles
 
-$(kernel): $(assembly_object_files) $(linker_script)
+$(kernel): cargo $(rust_os) $(assembly_object_files) $(linker_script)
 	@ld -n -T $(linker_script) -o $(kernel) $(assembly_object_files)
 
+cargo:
+	@cargo build --target $(target)
 
 # compile assembly files
 build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm

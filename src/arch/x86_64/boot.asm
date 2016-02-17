@@ -1,5 +1,6 @@
 global start
-
+extern long_mode_start
+        
 section .text
 bits 32
 start:
@@ -10,18 +11,28 @@ start:
         call check_cpuid
         call check_long_mode
 
-
-;;; something in one of these two functions is buggy
-;; and causes an infinite reboot-loop.
         call set_up_page_tables
         call enable_paging
-        
-        ; print "DEBASA OS" to the screen
-        mov dword [0xb8546], 0x30453144
-        mov dword [0xb854a], 0x30413142
-        mov dword [0xb854e], 0x30413153
-        mov dword [0xb8552], 0x304f3120 
-        mov dword [0xb8556], 0x00003053         
+
+        ; load the 64-bit GDT
+        lgdt [gdt64.pointer]
+
+        ; update selectors
+        mov ax, gdt64.data      ; new
+        mov ss, ax              ; stack selector
+        mov ds, ax              ; data selector
+        mov es, ax              ; extra selector
+
+        jmp gdt64.code:long_mode_start ; to set the code selector in 64bit mode
+
+        ; print "OK", in white on green
+        mov dword [0xb8000], 0x2f4b2f4f        
+        ; print "DEBASA OS" to the screen ;; moved to 64bit boot code
+        ; mov dword [0xb8546], 0x30453144
+        ; mov dword [0xb854a], 0x30413142
+        ; mov dword [0xb854e], 0x30413153
+        ; mov dword [0xb8552], 0x304f3120 
+        ; mov dword [0xb8556], 0x00003053         
         
         hlt
         
@@ -150,6 +161,18 @@ enable_paging:
 
         ret
 
+
+section .rodata
+gdt64:
+        dq 0                    ; zero entry
+.code: equ $ - gdt64                                                 ; new
+        dq (1<<44) | (1<<47) | (1<<41) | (1<<41) | (1<<43) | (1<<53) ; code seg
+.data: equ $ - gdt64                                                 ; new
+        dq (1<<44) | (1<<47) | (1<<41)                               ; data seg
+.pointer:
+        dw $ - gdt64 - 1
+        dq gdt64
+        
 ;;; to reserve space for stack memory
 
 section .bss
